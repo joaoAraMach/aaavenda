@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vendas - Sistema de Vendas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    .item:last-child {
+      border-bottom: none;
+    }
+    .item button {
+      background: #28a745;
+      color: #fff;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .item button:hover {
+      background: #218838;
+    }
+    .total {
+      text-align: right;
+      font-size: 1.2em;
+      margin-top: 20px;
+    }
+    .payment-methods {
+      margin-top: 20px;
+    }
+    .payment-methods select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+    .pay-button {
+      width: 100%;
+      padding: 10px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    .pay-button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Vendas</h1>
+
+    <!-- Lista de Itens -->
+    <div id="itens">
+      <div class="item">
+        <span>Cerveja - R$ 10,00</span>
+        <button onclick="adicionarItem('Cerveja', 10)">Adicionar</button>
+      </div>
+      <div class="item">
+        <span>Refrigerante - R$ 5,00</span>
+        <button onclick="adicionarItem('Refrigerante', 5)">Adicionar</button>
+      </div>
+      <div class="item">
+        <span>Água - R$ 3,00</span>
+        <button onclick="adicionarItem('Água', 3)">Adicionar</button>
+      </div>
+    </div>
+
+    <!-- Total -->
+    <div class="total">
+      <strong>Total: R$ <span id="total">0.00</span></strong>
+    </div>
+
+    <!-- Métodos de Pagamento -->
+    <div class="payment-methods">
+      <label for="metodo">Método de Pagamento:</label>
+      <select id="metodo">
+        <option value="credito">Crédito</option>
+        <option value="debito">Débito</option>
+        <option value="pix">PIX</option>
+      </select>
+    </div>
+
+    <!-- Botão de Pagar -->
+    <button class="pay-button" onclick="processarPagamento()">Pagar</button>
+  </div>
+
+  <script>
+    let total = 0;
+    const itensSelecionados = [];
+
+    // Função para adicionar itens ao pedido
+    function adicionarItem(nome, preco) {
+      total += preco;
+      itensSelecionados.push({ nome, preco });
+      document.getElementById('total').textContent = total.toFixed(2);
+    }
+
+    // Função para processar o pagamento
+    async function processarPagamento() {
+      const metodo = document.getElementById('metodo').value;
+
+      if (total === 0) {
+        alert('Adicione itens ao pedido antes de pagar.');
+        return;
+      }
+
+      const payload = {
+        metodo,
+        valor: total,
+        itens: itensSelecionados,
+      };
+
+      try {
+        const response = await fetch('/api/pagamento', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert('Pagamento aprovado! Obrigado pela compra.');
+          // Limpar o pedido
+          total = 0;
+          itensSelecionados.length = 0;
+          document.getElementById('total').textContent = '0.00';
+        } else {
+          alert('Pagamento recusado. Tente novamente.');
+        }
+      } catch (error) {
+        console.error('Erro ao processar pagamento:', error);
+        alert('Erro ao processar pagamento. Tente novamente.');
+      }
+    }
+  </script>
+</body>
+</html>
